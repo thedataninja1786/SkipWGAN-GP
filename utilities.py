@@ -2,7 +2,6 @@ import torch
 from torch import nn
 from PIL import Image
 import torch
-from torchvision import transforms
 from torch.utils.data import DataLoader, Subset, DistributedSampler, TensorDataset
 import os
 
@@ -55,32 +54,6 @@ class CustomDataset(torch.utils.data.Dataset):
             image = self.transform(image)
         return image
     
-
-means = torch.tensor([0.5, 0.5, 0.5])
-stds = torch.tensor([0.5, 0.5, 0.5])
-
-transform = transforms.Compose(
-    [
-transforms.Resize((128, 128)),
-transforms.ToTensor(),
-transforms.Normalize(means,stds),
-    ]
-)
-
-transform_aug = transforms.Compose(
-    [
-    transforms.Resize((128, 128)),
-    transforms.ToTensor(),
-    transforms.Normalize(means, stds),
-    #transforms.RandomAffine(degrees=(30, 180), translate=(0.2, 0.2), scale=(0.5, 1.1)),
-    transforms.RandomHorizontalFlip(0.55),
-    transforms.RandomVerticalFlip(0.55),
-    transforms.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 5)),
-    transforms.RandomAutocontrast(p=0.333)
-    ]
-)
-
-
 def get_data_loaders(dataset, batch_size):
     train_loader = DataLoader(
         dataset,
