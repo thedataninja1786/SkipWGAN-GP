@@ -1,18 +1,34 @@
-from utilities import gradient_penalty, weight_initialization, CustomDataset
+from utilities import gradient_penalty, weight_initialization, CustomDataset, get_data_loaders
 from model import Generator, Discriminator
 import matplotlib.pyplot as plt
 import torch
 from torch import nn, optim
+from torchvision import transforms
 import numpy as np
 import time 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 means = torch.tensor([0.5, 0.5, 0.5]).to(device)
 stds = torch.tensor([0.5, 0.5, 0.5]).to(device)
+BATCH_SIZE = 32
+
+transform_aug = transforms.Compose(
+    [
+    transforms.Resize((128, 128)),
+    transforms.ToTensor(),
+    transforms.Normalize(means, stds),
+    #transforms.RandomAffine(degrees=(30, 180), translate=(0.2, 0.2), scale=(0.5, 1.1)),
+    transforms.RandomHorizontalFlip(0.55),
+    transforms.RandomVerticalFlip(0.55),
+    transforms.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 5)),
+    transforms.RandomAutocontrast(p=0.333)
+    ]
+)
 
 path = ""
-dataset = CustomDataset(root_dir=path, transform=transform)
-dataset_aug = CustomDataset(root_dir=path, transform=transform_aug)
+dataset = CustomDataset(root_dir=path, transform=transform_aug)
+channels, img, img_dim, train_loader = get_data_loaders(dataset, BATCH_SIZE)
+
 
 # Instantiate models
 gen = Generator(128, 3, 1).to(device)   
@@ -27,17 +43,16 @@ gen_optim = optim.Adam(gen.parameters(), lr = 5e-5, betas=(0.0, 0.9))
 gen.train()
 disc.train()
 
-concat_dataset = torch.utils.data.ConcatDataset([dataset, dataset_aug]) # check this 
+
 generated_images = []
 epochs = 100
 LAMBDA_GP = 10.0
-BATCH_SIZE = 32
 latent_dim = 128
 
 # training loop 
 for epoch in range(epochs):
     epoch_start_time = time.time()
-    for batch_idx, (real_img) in enumerate(concat_loader):
+    for batch_idx, (real_img) in enumerate(train_loader):
         real_img = real_img.to(device)
         x = 5
         if torch.rand(1) > 0.6:
