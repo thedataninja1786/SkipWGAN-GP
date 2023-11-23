@@ -7,6 +7,7 @@ import os
 
 
 def gradient_penalty(critic, real, fake, device):
+    # from: @ https://github.com/aladdinpersson/Machine-Learning-Collection/tree/master/ML/Pytorch/GANs/4.%20WGAN-GP
     BATCH_SIZE, C, H, W = real.shape
     alpha = torch.rand((BATCH_SIZE, 1, 1, 1)).repeat(1, C, H, W).to(device)
     interpolated_images = real * alpha + fake * (1 - alpha)
