@@ -41,7 +41,6 @@ class CustomDataset(torch.utils.data.Dataset):
     def __init__(self, root_dir, transform=None):
         self.root_dir = root_dir
         self.transform = transform
-
         self.image_paths = os.listdir(root_dir)
 
     def __len__(self):
